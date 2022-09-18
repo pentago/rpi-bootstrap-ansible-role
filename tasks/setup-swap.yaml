@@ -1,0 +1,57 @@
+- name: Setup SWAP
+  block:
+    - name: Checking SWAP Status
+      ansible.builtin.command: swapon --show
+      register: swap_status
+      changed_when: false
+
+    - name: Disabling Swap
+      ansible.builtin.command: "{{ item }}"
+      loop:
+        - dphys-swapfile swapoff
+        - dphys-swapfile uninstall
+      when: swap_status.stdout | regex_search('zram', multiline=True, ignorecase=True) is none
+
+    - name: Purging Existing ZRAM Packages
+      ansible.builtin.apt:
+        name: zram-config
+        state: absent
+        purge: true
+        force: true
+        autoremove: true
+        lock_timeout: 120
+
+    - name: Installing ZRAM Packages
+      ansible.builtin.apt:
+        state: latest
+        install_recommends: false
+        update_cache: true
+        autoremove: true
+        autoclean: true
+        lock_timeout: 120
+        name:
+          - linux-modules-extra-raspi
+          - zram-tools
+
+    - name: Checking if zram Module is Loaded
+      ansible.builtin.shell: |
+        set -o pipefail
+        lsmod | grep zram || true
+      args:
+        executable: /usr/bin/bash
+      register: zram_kernel_module_status
+      changed_when: false
+
+    - name: Rebooting to Load ZRAM Module
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+      when: zram_kernel_module_status.stdout | regex_search('zram', multiline=True, ignorecase=True) is none
+
+    - name: Configuring ZRAM
+      ansible.builtin.template:
+        src: templates/zramswap.j2
+        dest: /etc/default/zramswap
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart ZRAM Service

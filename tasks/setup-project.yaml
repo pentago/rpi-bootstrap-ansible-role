@@ -1,0 +1,26 @@
+- name: Setup Project
+  block:
+    - name: Creating Project Directory
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0700
+        recurse: true
+      loop:
+        - "{{ project_data_dir }}"
+        - "{{ project_storage_dir }}"
+
+    - name: Setting Project File Permissions
+      ansible.posix.acl:
+        path: "{{ project_data_dir }}"
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        # default: true
+        recursive: true
+        state: present
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }

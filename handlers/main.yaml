@@ -1,0 +1,79 @@
+- name: Restart Tailscale Service
+  ansible.builtin.systemd:
+    name: tailscaled
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  # changed_when: false
+
+- name: Restart VNC Server Service
+  ansible.builtin.systemd:
+    name: vncserver
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  environment:
+    XDG_RUNTIME_DIR: /run/user/{{ uid }}
+  # changed_when: false
+
+- name: Restart Docker Service
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  # changed_when: false
+
+- name: Restart ZRAM Service
+  ansible.builtin.systemd:
+    name: zramswap
+    enabled: true
+    daemon_reload: true
+    state: restarted
+
+- name: Restart Timesyncd Service
+  ansible.builtin.systemd:
+    name: systemd-timesyncd
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  # changed_when: false
+
+- name: Disable Unwanted Services
+  # become: true
+  become_user: "{{ user }}"
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: true
+    daemon_reload: true
+    masked: false
+    scope: user
+    state: masked
+  loop:
+    - tracker-extract-3
+    - tracker-miner-fs-3
+    - tracker-miner-rss-3
+    - tracker-writeback-3
+    - tracker-xdg-portal-3
+    - tracker-miner-fs-control-3
+
+- name: Restart GDM Service
+  ansible.builtin.systemd:
+    name: gdm
+    enabled: true
+    daemon_reload: true
+    state: restarted
+  # changed_when: false
+
+- name: Restart Preload Service
+  ansible.builtin.systemd:
+    name: preload
+    enabled: true
+    daemon_reload: true
+    state: restarted
+
+- name: Enable TRIM Timer Service
+  ansible.builtin.systemd:
+    name: fstrim.timer
+    enabled: true
+    daemon_reload: true

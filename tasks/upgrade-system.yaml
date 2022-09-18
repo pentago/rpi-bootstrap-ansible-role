@@ -1,0 +1,5 @@
+- name: Upgrading System
+  ansible.builtin.apt:
+    upgrade: full
+    install_recommends: false
+    lock_timeout: 120

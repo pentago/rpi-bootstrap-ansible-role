@@ -1,0 +1,40 @@
+- name: Setup tailscale
+  block:
+    - name: Adding Tailscale Repo Key
+      ansible.builtin.apt_key:
+        url: https://pkgs.tailscale.com/stable/ubuntu/{{ ubuntu_dist }}.noarmor.gpg
+        state: present
+
+    - name: Adding Tailscale Repository
+      ansible.builtin.apt_repository:
+        repo: deb https://pkgs.tailscale.com/stable/ubuntu {{ ubuntu_dist }} main
+        state: present
+
+    - name: Installing Tailscale Packages
+      ansible.builtin.apt:
+        name: tailscale
+        state: latest
+        install_recommends: false
+        lock_timeout: 120
+
+    - name: Setting Default Tailscale Facts
+      ansible.builtin.set_fact:
+        tailscale_auth_needed: false
+
+    - name: Getting Tailscale Status
+      ansible.builtin.command: tailscale status --json
+      register: tailscale_status
+      changed_when: false
+
+    - name: Deciding if Tailscale Needs Authenticating
+      when: tailscale_status_fields.BackendState == "NeedsLogin"
+      ansible.builtin.set_fact:
+        tailscale_auth_needed: true
+      vars:
+        tailscale_status_fields: "{{ tailscale_status.stdout | from_json }}"
+
+    - name: Authenticating Tailscale if Needed
+      ansible.builtin.command: tailscale up --hostname "{{ hostname }}" --authkey "{{ tailscale_auth_key }}"
+      when: tailscale_auth_needed
+  notify:
+    - Restart Tailscale Service

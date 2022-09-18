@@ -1,0 +1,24 @@
+- name: Setup Packages
+  block:
+    - name: Update APT Cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+        lock_timeout: 120
+
+    - name: Purging Unwanted Packages
+      ansible.builtin.apt:
+        name: "{{ purge_packages }}"
+        state: absent
+        purge: true
+        force: true
+        autoremove: true
+        lock_timeout: 120
+
+    - name: Installing Packages
+      ansible.builtin.apt:
+        name: "{{ install_packages }}"
+        state: latest
+        update_cache: true
+        install_recommends: false
+        lock_timeout: 120

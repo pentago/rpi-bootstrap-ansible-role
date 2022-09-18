@@ -1,0 +1,73 @@
+- name: Configuring /boot/firmware Mount Point
+  ansible.posix.mount:
+    path: /boot/firmware
+    src: LABEL=system-boot
+    opts: defaults
+    passno: 1
+    fstype: vfat
+    state: mounted
+    backup: true
+
+- name: Configuring / Mount Point
+  ansible.posix.mount:
+    path: /
+    src: LABEL=writable
+    opts: noatime,errors=remount-ro
+    passno: 1
+    fstype: ext4
+    state: mounted
+    backup: true
+
+- name: Creating "{{ project_storage_dir }}" Mount Point
+  ansible.builtin.file:
+    path: "{{ project_storage_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- name: Creating /storage-aux Mount Point
+  ansible.builtin.file:
+    path: "{{ aux_storage_dir }}"
+    state: directory
+    recurse: true
+    owner: "{{ user }}"
+    group: "{{ user }}"
+  when: aux_storage_dir is defined
+
+- name: Mounting "{{ project_storage_dir }}"
+  ansible.posix.mount:
+    path: "{{ project_storage_dir }}"
+    src: LABEL={{ storage_disk_label }}
+    opts: auto,nofail,noatime,users,rw,dmask=022,fmask=133,uid={{ uid }},gid={{ uid }}
+    fstype: exfat
+    state: mounted
+    backup: true
+
+- name: Mounting Storage 2
+  ansible.posix.mount:
+    path: "{{ aux_storage_dir }}"
+    src: LABEL={{ aux_storage_disk_label }}
+    opts: auto,nofail,noatime,users,rw,dmask=022,fmask=133,uid={{ uid }},gid={{ uid }}
+    fstype: exfat
+    state: mounted
+    backup: true
+  when: aux_storage_disk_label is defined
+
+- name: Mounting /tmp
+  ansible.posix.mount:
+    path: /tmp
+    src: tmpfs
+    opts: defaults,noatime,mode=1777
+    fstype: tmpfs
+    state: mounted
+    backup: true
+
+- name: Mounting /var/tmp
+  ansible.posix.mount:
+    path: /var/tmp
+    src: tmpfs
+    opts: defaults,noatime,mode=1777
+    fstype: tmpfs
+    state: mounted
+    backup: true

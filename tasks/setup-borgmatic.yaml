@@ -1,0 +1,60 @@
+- name: Installing Borg Packages
+  ansible.builtin.apt:
+    install_recommends: false
+    state: latest
+    update_cache: true
+    lock_timeout: 120
+    name:
+      - borgmatic
+
+- name: Create Borgmatic Config Directory
+  ansible.builtin.file:
+    path: /etc/borgmatic
+    state: directory
+    owner: root
+    group: root
+    mode: 0750
+
+- name: Adding Borgmatic Config
+  ansible.builtin.template:
+    src: templates/borgmatic_config.yaml.j2
+    dest: /etc/borgmatic/config.yaml
+    owner: root
+    group: root
+    mode: 0600
+    validate: validate-borgmatic-config -c %s
+
+- name: Copying Borgmatic SSH Key
+  ansible.builtin.copy:
+    content: "{{ '~/.ssh/' + borgbase_ssh_key }}"
+    dest: /etc/borgmatic/{{ hostname }}-borgbase.key
+    owner: root
+    group: "{{ user }}"
+    mode: 0600
+
+- name: Accepting Repo Host Keys
+  ansible.builtin.command: ssh-keyscan "{{ borgbase_repo }}"
+  changed_when: false
+  register: repo_ssh_keyscan
+
+- name: Adding Repo Host Keys
+  ansible.builtin.lineinfile:
+    path: ~/.ssh/known_hosts
+    create: true
+    state: present
+    line: "{{ item }}"
+    mode: 0600
+  loop: "{{ repo_ssh_keyscan.stdout_lines | list }}"
+
+- name: Configuring Backup Cronjob
+  ansible.builtin.cron:
+    state: present
+    name: Nightly Backups
+    month: "*"
+    weekday: "*"
+    day: "*"
+    hour: "00"
+    minute: "1"
+    user: root
+    job: borgmatic
+    cron_file: borgmatic

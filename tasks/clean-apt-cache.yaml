@@ -1,0 +1,5 @@
+- name: Clean APT Cache
+  ansible.builtin.apt:
+    autoclean: true
+    autoremove: true
+    lock_timeout: 120

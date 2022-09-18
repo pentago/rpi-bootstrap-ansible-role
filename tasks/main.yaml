@@ -1,0 +1,85 @@
+# https://www.toptechskills.com/ansible-tutorials-courses/ansible-include-import-tasks-tutorial-examples/
+
+- name: Setup Hostname
+  include_tasks: setup-hostname.yaml
+
+- name: Setup Locale
+  include_tasks: setup-locale.yaml
+
+- name: Setup Network
+  include_tasks: setup-network.yaml
+
+- name: Setup Time
+  include_tasks: setup-time.yaml
+
+- name: Setup Hosts File
+  include_tasks: setup-hosts.yaml
+
+- name: Setup Config
+  include_tasks: setup-config.yaml
+
+- name: Setup Kernel Command Line Flags
+  include_tasks: setup-cmdline.yaml
+
+- name: Setup SSH
+  include_tasks: setup-sshd.yaml
+
+- name: Setup fstab
+  include_tasks: setup-fstab.yaml
+
+- name: Setup Packages
+  include_tasks: setup-packages.yaml
+
+- name: Upgrade System
+  include_tasks: upgrade-system.yaml
+
+- name: Setup Desktop Environment
+  include_tasks: setup-desktop-environment.yaml
+  when: setup_desktop == true
+
+- name: Setup Docker
+  include_tasks: setup-docker.yaml
+  when: setup_docker == true
+
+- name: Setup Tailscale
+  include_tasks: setup-tailscale.yaml
+  when: setup_tailscale == true
+
+- name: Setup User
+  include_tasks: setup-user.yaml
+
+- name: Setup Project Directory
+  include_tasks: setup-project.yaml
+  when: setup_docker == true
+
+- name: Clone Desired Git Repos
+  include_tasks: clone-git-repos.yaml
+
+- name: Setup VNC Server
+  include_tasks: setup-vncserver.yaml
+  when: setup_vnc and setup_desktop == true
+
+- name: Setup Disk TRIM
+  include_tasks: setup-trim.yaml
+  when: setup_trim == true
+
+- name: Setup Preload
+  include_tasks: setup-preload.yaml
+
+- name: Setup SWAP
+  include_tasks: setup-swap.yaml
+  when: setup_zram == true
+
+- name: Disable Unneeded Services
+  include_tasks: disable-unneeded-services.yaml
+
+- name: Clean APT Cache
+  include_tasks: clean-apt-cache.yaml
+
+- name: Setup Borgmatic
+  include_tasks: setup-borgmatic.yaml
+  when: setup_borgmatic == true
+
+- name: Reboot
+  include_tasks: reboot.yaml
+  when: reboot == true

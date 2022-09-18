@@ -1,0 +1,47 @@
+- name: Setup User
+  block:
+    - name: Modify User
+      ansible.builtin.user:
+        name: "{{ user }}"
+        uid: "{{ uid }}"
+        umask: 0077
+        groups: "{{ item }}"
+        create_home: true
+        shell: /usr/bin/zsh
+        password: "{{ password | password_hash('sha512', password_salt) }}"
+        append: true
+      loop:
+        - sudo
+        - docker
+        - video
+
+    - name: Copying Public SSH Key
+      ansible.posix.authorized_key:
+        follow: true
+        user: "{{ item }}"
+        key: "{{ lookup('file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/' + pub_ssh_key) }}"
+        state: present
+      loop:
+        - "{{ user }}"
+        - root
+
+    - name: Setting Home Dir Permissions
+      ansible.builtin.file:
+        state: directory
+        path: /home/{{ user }}
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0700
+
+    - name: Setting User Files Permissions
+      ansible.posix.acl:
+        path: /home/{{ user }}
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        default: true
+        recursive: true
+        state: present
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }

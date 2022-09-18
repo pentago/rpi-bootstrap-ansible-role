@@ -1,0 +1,28 @@
+- name: Installing ssh Packages
+  ansible.builtin.apt:
+    install_recommends: false
+    state: latest
+    lock_timeout: 120
+    name:
+      - openssh-client
+      - openssh-server
+
+- name: Changing sshd Config
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    state: present
+    backup: true
+    regexp: ^(#)?{{ item.key }}
+    line: "{{ item.key }} {{ item.value }}"
+    validate: sshd -T -f %s
+  loop:
+    - { key: PasswordAuthentication, value: "no" }
+    - { key: PermitEmptyPasswords, value: "no" }
+    - { key: AllowAgentForwarding, value: "yes" }
+    - { key: AllowTcpForwarding, value: "yes" }
+
+- name: Enabling ssh Service
+  ansible.builtin.systemd:
+    name: ssh
+    enabled: true
+    daemon_reload: true

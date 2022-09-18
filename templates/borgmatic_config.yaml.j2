@@ -1,0 +1,58 @@
+location:
+    source_directories:
+        - /
+
+    repositories:
+        - "{{ borgbase_user }}@{{ borgbase_repo }}:repo"
+
+    one_file_system: false
+    ctime: false
+    birthtime: false
+    files_cache: ctime,size,inode
+
+    patterns:
+        - R /
+        - '- /home/*/.cache'
+        - '- /dev/*'
+        - '- /proc/*'
+        - '- /sys/*'
+        - '- /run/*'
+        - '- /mnt/*'
+        - '- /media/*'
+        - '- /tmp/*'
+        - '- /var/tmp/*'
+        - '- /var/cache/apt/arhives/*'
+        - '- /var/lib/docker/*'
+        - '- /var/log/*'
+        - '- /lost+found'
+        - '- /storage/*'
+        - '- /storage2/*'
+
+    exclude_caches: true
+    exclude_if_present:
+        - .nobackup
+
+storage:
+    encryption_passphrase: "{{ borgbase_passphrase }}"
+    compression: zstd
+    ssh_command: ssh -i /etc/borgmatic/"{{ hostname }}"-borgbase.key
+    archive_name_format: "{hostname}-{now:%Y-%m-%d-%H%M%S}"
+
+retention:
+    keep_daily: 7
+    keep_monthly: 1
+#   keep_weekly:
+#   keep_yearly:
+    prefix: "{hostname}-"
+
+consistency:
+    checks:
+        - repository
+        - archives
+    check_last: 3
+    prefix: "{hostname}-"
+
+hooks:
+    healthchecks: "{{ borgbase_healthcheck_url }}"
+    after_backup:
+        - echo "Finished backup"

@@ -1,0 +1,20 @@
+- name: Setup Git Repos
+  become_user: "{{ user }}"
+  block:
+    - name: Cloning Dotfiles Repo
+      ansible.builtin.git:
+        accept_hostkey: true
+        clone: true
+        update: false
+        repo: "{{ dotfiles_repo }}"
+        version: main
+        dest: /home/{{ user }}/{{ dotfiles_dir }}
+
+    - name: Cloning RPIMC Repo
+      ansible.builtin.git:
+        accept_hostkey: true
+        clone: true
+        update: false
+        repo: "{{ project_repo }}"
+        version: master
+        dest: "{{ project_data_dir }}"

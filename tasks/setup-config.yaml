@@ -1,0 +1,7 @@
+- name: Adding config.txt
+  ansible.builtin.template:
+    src: templates/config.txt.j2
+    dest: /boot/firmware/config.txt
+    owner: root
+    group: root
+    mode: 0644

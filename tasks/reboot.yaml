@@ -1,0 +1,10 @@
+- name: Checking if Reboot is Required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+    get_checksum: false
+  register: reboot_required_file
+
+- name: Rebooting if Required
+  ansible.builtin.reboot:
+    reboot_timeout: 300
+  when: reboot_required_file.stat.exists

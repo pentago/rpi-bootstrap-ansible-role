@@ -1,0 +1,19 @@
+[Unit]
+Description=Start VNC server at startup
+Requires=display-manager.service
+After=network-online.target
+After=display-manager.service
+
+[Service]
+Type=simple
+Environment=HOME=/home/{{ user }}
+WorkingDirectory=/home/{{ user }}
+PIDFile=/home/{{ user }}/.vnc/vncserver.pid
+ExecStartPre=-/usr/bin/sh -c "vncserver -kill :1 >/dev/null 2>&1 || :"
+ExecStart=vncserver :1
+ExecStop=/usr/bin/sh -c "vncserver -kill :1 >/dev/null 2>&1 || :"
+Restart=on-failure
+RestartSec=500ms
+
+[Install]
+WantedBy=multi-user.target

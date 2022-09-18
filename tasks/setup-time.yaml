@@ -1,0 +1,13 @@
+- name: Setup Time & Date
+  block:
+    - name: Setting Timezone
+      community.general.timezone:
+        name: "{{ timezone }}"
+        hwclock: local
+
+    - name: Configuring NTP Server
+      ansible.builtin.lineinfile:
+        path: /etc/systemd/timesyncd.conf
+        insertbefore: "#NTP="
+        line: NTP={{ ntp_server }}
+  notify: Restart Timesyncd Service

@@ -1,0 +1,1 @@
+ACTION=="add|change", ATTRS{idVendor}=="{{ disk_vendor_id.stdout }}", ATTRS{idProduct}=="{{ disk_product_id.stdout }}", SUBSYSTEM=="scsi_disk", ATTR{provisioning_mode}="unmap"

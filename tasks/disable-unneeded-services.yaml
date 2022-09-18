@@ -1,0 +1,14 @@
+- name: Disabling Unneeded Services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: false
+  loop:
+    - bluetooth
+    - wpa_supplicant
+    - unattended-upgrades
+    - dphys-swapfile
+    - apt-daily-upgrade.timer
+    - apt-daily.timer
+    - motd-news.timer
+    - update-notifier-download.timer
+    - update-notifier-motd.timer

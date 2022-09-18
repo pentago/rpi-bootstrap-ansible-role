@@ -1,0 +1,12 @@
+- name: Installing Desktop Environment
+  ansible.builtin.apt:
+    state: latest
+    update_cache: true
+    install_recommends: false
+    lock_timeout: 120
+    name:
+      - ubuntu-desktop-minimal
+      - ubuntu-restricted-extras
+  notify:
+    - Disable Unwanted Services
+    - Restart GDM Service

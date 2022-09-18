@@ -1,0 +1,13 @@
+- name: Adding Netplan Profile
+  ansible.builtin.template:
+    src: templates/netplan.yaml.j2
+    dest: /etc/netplan/50-cloud-init.yaml
+    owner: root
+    group: root
+    mode: 0644
+    validate: netplan try --timeout 1 %s
+    backup: true
+
+- name: Applying Netplan Profile
+  ansible.builtin.command: netplan apply
+  changed_when: false

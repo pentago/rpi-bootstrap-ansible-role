@@ -1,0 +1,65 @@
+- name: Setup VNC Server Packages
+  block:
+    - name: Installing VNC Server Packages
+      ansible.builtin.apt:
+        install_recommends: false
+        state: latest
+        update_cache: true
+        lock_timeout: 120
+        name:
+          - tigervnc-standalone-server
+          - tigervnc-common
+          - tigervnc-xorg-extension
+          - tigervnc-tools
+          - dbus-x11
+
+    - name: Creating .vnc Directory
+      ansible.builtin.file:
+        path: /home/{{ user }}/.vnc
+        state: directory
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0700
+
+    - name: Adding VNC Server Config
+      ansible.builtin.template:
+        src: templates/vnc_config.j2
+        dest: /home/{{ user }}/.vnc/config
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0600
+        backup: true
+
+    - name: Adding VNC Server Startup Script
+      ansible.builtin.template:
+        src: templates/vnc_xstartup.j2
+        dest: /home/{{ user }}/.vnc/xstartup
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0700
+        backup: true
+
+    - name: Setting VNC User Password
+      ansible.builtin.shell: |
+        set -o pipefail
+        echo {{ vnc_passwd }} | vncpasswd -f > /home/{{ user }}/.vnc/passwd
+      args:
+        executable: /usr/bin/bash
+        creates: /home/{{ user }}/.vnc/passwd
+
+    - name: Changing VNC passwd Permissions
+      ansible.builtin.file:
+        path: /home/{{ user }}/.vnc/passwd
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0600
+
+    - name: Adding VNC Server Service Unit File
+      ansible.builtin.template:
+        src: templates/vncserver.service.j2
+        dest: /etc/systemd/system/vncserver.service
+        owner: root
+        group: root
+        mode: 0644
+        backup: true
+  notify: Restart VNC Server Service

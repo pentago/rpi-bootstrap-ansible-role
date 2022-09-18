@@ -1,0 +1,7 @@
+- name: Installing Preload Package
+  ansible.builtin.apt:
+    name: preload
+    install_recommends: false
+    state: latest
+    lock_timeout: 120
+  notify: Restart Preload Service
