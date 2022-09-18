@@ -16,6 +16,8 @@ Multiple functionalities can be enabled such as but not limited to:
   * Borgmatic backup to Borgbase repo
   * and more
 
+Get from Ansible Galaxy: https://galaxy.ansible.com/pentago/rpi_bootstrap_ansible_role
+
 Example Playbook
 ----------------
 
