@@ -4,7 +4,6 @@
     enabled: true
     daemon_reload: true
     state: restarted
-  # changed_when: false
 
 - name: Restart VNC Server Service
   ansible.builtin.systemd:
@@ -14,7 +13,6 @@
     state: restarted
   environment:
     XDG_RUNTIME_DIR: /run/user/{{ uid }}
-  # changed_when: false
 
 - name: Restart Docker Service
   ansible.builtin.systemd:
@@ -22,7 +20,6 @@
     enabled: true
     daemon_reload: true
     state: restarted
-  # changed_when: false
 
 - name: Restart ZRAM Service
   ansible.builtin.systemd:
@@ -37,7 +34,6 @@
     enabled: true
     daemon_reload: true
     state: restarted
-  # changed_when: false
 
 - name: Disable Unwanted Services
   # become: true
@@ -63,7 +59,6 @@
     enabled: true
     daemon_reload: true
     state: restarted
-  # changed_when: false
 
 - name: Restart Preload Service
   ansible.builtin.systemd:

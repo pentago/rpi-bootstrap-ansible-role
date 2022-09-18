@@ -2,7 +2,7 @@
   ansible.builtin.command: fstrim -nv /
   changed_when: false
   register: trim_status
-  when: setup_trim == true
+  when: setup_trim.exists
 
 - name: Setup SSD TRIM
   when: trim_status.stdout | regex_search('not supported', multiline=True, ignorecase=True)
@@ -57,7 +57,7 @@
         state: present
         path: "{{ disk_provisioning_mode.stdout | regex_replace(':[a-z]+$') }}"
         line: unmap
-      when: maximum_unmap_lba_count.stdout|int > 0 and unmap_command_support.stdout|int == 1
+      when: maximum_unmap_lba_count.stdout | int > 0 and unmap_command_support.stdout | int == 1
 
     - name: Getting Disk Vendor
       ansible.builtin.shell: |
