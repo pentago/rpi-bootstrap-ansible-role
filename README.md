@@ -19,8 +19,6 @@ Multiple functionalities can be enabled such as but not limited to:
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
     - name: Bootstrap Raspberry Pi 4
       hosts: rpi
       become: true
