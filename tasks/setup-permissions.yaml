@@ -1,0 +1,161 @@
+- name: Setting User Home Dir Permissions
+  block:
+    - name: Getting User Home Dir Information
+      ansible.builtin.stat:
+        path: /home/{{ user }}
+        get_attributes: true
+        get_checksum: false
+      register: userhome
+
+    - name: Getting User Files Information
+      ansible.builtin.shell: |
+        set -o pipefail
+        find /home/{{ user }} -type f ! -perm u=rw,g=,o= | wc -l
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      register: user_insecure_files
+
+    - name: Getting User Directories Information
+      ansible.builtin.shell: |
+        set -o pipefail
+        find /home/{{ user }} -type d ! -perm u=rwx,g=,o= | wc -l
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      register: user_insecure_dirs
+
+      # https://i.imgur.com/UKq7iMx.png
+    - name: Removing User Home Directory Execute Permissions
+      ansible.builtin.file:
+        state: directory
+        path: /home/{{ user }}
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        recurse: true
+        mode: 0600
+      when:
+        - user_insecure_files.stdout | int > 0 or user_insecure_dirs.stdout | int > 0 or userhome.stat.mode != '0700'
+
+    - name: Setting Proper User Files Permissions
+      ansible.posix.acl:
+        path: /home/{{ user }}
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        recursive: true
+        state: present
+      no_log: true
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }
+      when:
+        - user_insecure_files.stdout != 0 or user_insecure_dirs.stdout != 0
+        - userhome.stat.rgrp is defined
+        - userhome.stat.roth is defined
+        - userhome.stat.wgrp is defined
+        - userhome.stat.woth is defined
+        - userhome.stat.xgrp is defined
+        - userhome.stat.xoth is defined
+
+    - name: Making New User Files Permissions Default
+      ansible.posix.acl:
+        path: /home/{{ user }}
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        default: true
+        recursive: true
+        state: present
+      no_log: true
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }
+      when:
+        - user_insecure_files.stdout != 0 or user_insecure_dirs.stdout != 0
+        - userhome.stat.rgrp is defined
+        - userhome.stat.roth is defined
+        - userhome.stat.wgrp is defined
+        - userhome.stat.woth is defined
+        - userhome.stat.xgrp is defined
+        - userhome.stat.xoth is defined
+
+    - name: Getting root Home Dir Information
+      ansible.builtin.stat:
+        path: /root
+        get_attributes: true
+        get_checksum: false
+      register: roothome
+
+    - name: Getting root Files Information
+      ansible.builtin.shell: |
+        set -o pipefail
+        find /root -type f ! -perm u=rw,g=,o= | wc -l
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      register: root_insecure_files
+
+    - name: Getting root Directories Information
+      ansible.builtin.shell: |
+        set -o pipefail
+        find /root -type d ! -perm u=rwx,g=,o= | wc -l
+      args:
+        executable: /usr/bin/bash
+      changed_when: false
+      register: root_insecure_dirs
+
+      # https://i.imgur.com/UKq7iMx.png
+    - name: Removing root Home Directory Execute Permissions
+      ansible.builtin.file:
+        state: directory
+        path: /root
+        owner: root
+        group: root
+        recurse: true
+        mode: 0600
+      when:
+        - root_insecure_files.stdout | int > 0 or root_insecure_dirs.stdout | int > 0 or roothome.stat.mode != '0700'
+
+    - name: Setting Proper root Files Permissions
+      ansible.posix.acl:
+        path: /root
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        recursive: true
+        state: present
+      no_log: true
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }
+      when:
+        - root_insecure_files.stdout != 0 or root_insecure_dirs.stdout != 0
+        - roothome.stat.rgrp is defined
+        - roothome.stat.roth is defined
+        - roothome.stat.wgrp is defined
+        - roothome.stat.woth is defined
+        - roothome.stat.xgrp is defined
+        - roothome.stat.xoth is defined
+
+    - name: Making New root Files Permissions Default
+      ansible.posix.acl:
+        path: /root
+        etype: "{{ item.key }}"
+        permissions: "{{ item.value }}"
+        default: true
+        recursive: true
+        state: present
+      no_log: true
+      loop:
+        - { key: user, value: "rwX" }
+        - { key: group, value: "---" }
+        - { key: other, value: "---" }
+      when:
+        - root_insecure_files.stdout != 0 or root_insecure_dirs.stdout != 0
+        - roothome.stat.rgrp is defined
+        - roothome.stat.roth is defined
+        - roothome.stat.wgrp is defined
+        - roothome.stat.woth is defined
+        - roothome.stat.xgrp is defined
+        - roothome.stat.xoth is defined

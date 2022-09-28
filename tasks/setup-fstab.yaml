@@ -1,13 +1,3 @@
-- name: Configuring /boot/firmware Mount Point
-  ansible.posix.mount:
-    path: /boot/firmware
-    src: LABEL=system-boot
-    opts: defaults
-    passno: 1
-    fstype: vfat
-    state: mounted
-    backup: true
-
 - name: Configuring / Mount Point
   ansible.posix.mount:
     path: /
@@ -18,7 +8,17 @@
     state: mounted
     backup: true
 
-- name: Creating "{{ project_storage_dir }}" Mount Point
+- name: Configuring /boot/firmware Mount Point
+  ansible.posix.mount:
+    path: /boot/firmware
+    src: LABEL=system-boot
+    opts: defaults
+    passno: 1
+    fstype: vfat
+    state: mounted
+    backup: true
+
+- name: Creating {{ project_storage_dir }} Mount Point
   ansible.builtin.file:
     path: "{{ project_storage_dir }}"
     state: directory
@@ -26,7 +26,7 @@
     owner: "{{ user }}"
     group: "{{ user }}"
 
-- name: Creating /storage-aux Mount Point
+- name: Creating {{ aux_storage_dir }} Mount Point
   ansible.builtin.file:
     path: "{{ aux_storage_dir }}"
     state: directory
@@ -35,7 +35,7 @@
     group: "{{ user }}"
   when: aux_storage_dir is defined
 
-- name: Mounting "{{ project_storage_dir }}"
+- name: Mounting {{ project_storage_dir }}
   ansible.posix.mount:
     path: "{{ project_storage_dir }}"
     src: LABEL={{ storage_disk_label }}
@@ -44,7 +44,7 @@
     state: mounted
     backup: true
 
-- name: Mounting Storage 2
+- name: Mounting {{ aux_storage_dir }}
   ansible.posix.mount:
     path: "{{ aux_storage_dir }}"
     src: LABEL={{ aux_storage_disk_label }}

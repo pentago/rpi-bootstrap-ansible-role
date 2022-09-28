@@ -6,21 +6,90 @@
         state: directory
         owner: "{{ user }}"
         group: "{{ user }}"
-        mode: 0700
+        mode: 0600
         recurse: true
       loop:
         - "{{ project_data_dir }}"
         - "{{ project_storage_dir }}"
 
-    - name: Setting Project File Permissions
-      ansible.posix.acl:
-        path: "{{ project_data_dir }}"
-        etype: "{{ item.key }}"
-        permissions: "{{ item.value }}"
-        # default: true
-        recursive: true
-        state: present
-      loop:
-        - { key: user, value: "rwX" }
-        - { key: group, value: "---" }
-        - { key: other, value: "---" }
+    - name: Setting Project Dir Permissions
+      block:
+        - name: Getting Project Dir Information
+          ansible.builtin.stat:
+            path: "{{ project_data_dir }}"
+            get_attributes: true
+            get_checksum: false
+          register: projectdir
+
+        - name: Getting Project Files Information
+          ansible.builtin.shell: |
+            set -o pipefail
+            find {{ project_data_dir }} -type f ! -perm u=rw,g=,o= | wc -l
+          args:
+            executable: /usr/bin/bash
+          changed_when: false
+          register: project_insecure_files
+
+        - name: Getting User Directories Information
+          ansible.builtin.shell: |
+            set -o pipefail
+            find {{ project_data_dir }} -type d ! -perm u=rwx,g=,o= | wc -l
+          args:
+            executable: /usr/bin/bash
+          changed_when: false
+          register: project_insecure_dirs
+
+          # https://i.imgur.com/UKq7iMx.png
+        - name: Removing Project Directory Execute Permissions
+          ansible.builtin.file:
+            state: directory
+            path: "{{ project_data_dir }}"
+            owner: "{{ user }}"
+            group: "{{ user }}"
+            recurse: true
+            mode: 0600
+          when:
+            - project_insecure_files.stdout | int > 0 or project_insecure_dirs.stdout | int > 0 or projectdir.stat.mode != '0700'
+
+        - name: Setting Proper Project Files Permissions
+          ansible.posix.acl:
+            path: "{{ project_data_dir }}"
+            etype: "{{ item.key }}"
+            permissions: "{{ item.value }}"
+            recursive: true
+            state: present
+          no_log: true
+          loop:
+            - { key: user, value: "rwX" }
+            - { key: group, value: "---" }
+            - { key: other, value: "---" }
+          when:
+            - project_insecure_files.stdout != 0 or project_insecure_dirs.stdout != 0
+            - projectdir.stat.rgrp is defined
+            - projectdir.stat.roth is defined
+            - projectdir.stat.wgrp is defined
+            - projectdir.stat.woth is defined
+            - projectdir.stat.xgrp is defined
+            - projectdir.stat.xoth is defined
+
+        - name: Making New Project Files Permissions Default
+          ansible.posix.acl:
+            path: "{{ project_data_dir }}"
+            etype: "{{ item.key }}"
+            permissions: "{{ item.value }}"
+            default: true
+            recursive: true
+            state: present
+          no_log: true
+          loop:
+            - { key: user, value: "rwX" }
+            - { key: group, value: "---" }
+            - { key: other, value: "---" }
+          when:
+            - project_insecure_files.stdout != 0 or project_insecure_dirs.stdout != 0
+            - projectdir.stat.rgrp is defined
+            - projectdir.stat.roth is defined
+            - projectdir.stat.wgrp is defined
+            - projectdir.stat.woth is defined
+            - projectdir.stat.xgrp is defined
+            - projectdir.stat.xoth is defined

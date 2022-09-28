@@ -55,6 +55,9 @@
 - name: Clone Desired Git Repos
   include_tasks: clone-git-repos.yaml
 
+- name: Setup Permissions
+  include_tasks: setup-permissions.yaml
+
 - name: Setup VNC Server
   include_tasks: setup-vncserver.yaml
   when: setup_vnc and setup_desktop == true
@@ -65,6 +68,7 @@
 
 - name: Setup Preload
   include_tasks: setup-preload.yaml
+  when: setup_desktop == true
 
 - name: Setup SWAP
   include_tasks: setup-swap.yaml
@@ -79,6 +83,10 @@
 - name: Setup Borgmatic
   include_tasks: setup-borgmatic.yaml
   when: setup_borgmatic == true
+
+- name: Setup Firewall
+  include_tasks: setup-firewall.yaml
+  when: setup_firewall == true
 
 - name: Reboot
   include_tasks: reboot.yaml

@@ -1,0 +1,114 @@
+- name: Enable UFW and Deny Everything
+  community.general.ufw:
+    state: enabled
+    policy: deny
+
+- name: Enable Logging
+  community.general.ufw:
+    logging: 'on'
+
+# ssh
+- name: Allow and Limit TCP Port 22
+  community.general.ufw:
+    rule: limit
+    proto: tcp
+    port: '22'
+
+# portmapper
+- name: Allow TCP Port 111
+  community.general.ufw:
+    port: '111'
+    proto: tcp
+
+- name: Allow UDP Port 111
+  community.general.ufw:
+    port: '111'
+    proto: udp
+
+# nfs
+- name: Allow TCP Port 2049
+  community.general.ufw:
+    port: '2049'
+    proto: tcp
+
+- name: Allow UDP Port 2049
+  community.general.ufw:
+    port: '2049'
+    proto: udp
+
+# qbittorrent web ui
+- name: Allow TCP Port 8080
+  community.general.ufw:
+    route: true
+    port: '8080'
+    proto: tcp
+
+# qbittorrent inbound tcp
+- name: Allow TCP Port 6881
+  community.general.ufw:
+    route: true
+    port: '6881'
+    proto: tcp
+
+# qbittorrent inbound udp
+- name: Allow UDP Port 6881
+  community.general.ufw:
+    route: true
+    port: '6881'
+    proto: udp
+
+# emby http web ui
+- name: Allow TCP Port 8096
+  community.general.ufw:
+    route: true
+    port: '8096'
+    proto: tcp
+
+# emby https web ui
+- name: Allow TCP Port 8920
+  community.general.ufw:
+    route: true
+    port: '8920'
+    proto: tcp
+
+# bazarr
+- name: Allow TCP Port 6767
+  community.general.ufw:
+    route: true
+    port: '6767'
+    proto: tcp
+
+# sonarr
+- name: Allow TCP Port 8989
+  community.general.ufw:
+    route: true
+    port: '8989'
+    proto: tcp
+
+# radarr
+- name: Allow TCP Port 7878
+  community.general.ufw:
+    route: true
+    port: '7878'
+    proto: tcp
+
+# prowlarr
+- name: Allow TCP Port 9696
+  community.general.ufw:
+    route: true
+    port: '9696'
+    proto: tcp
+
+# flaresolverr
+- name: Allow TCP Port 8191
+  community.general.ufw:
+    route: true
+    port: '8191'
+    proto: tcp
+
+# filebrowser
+- name: Allow TCP Port 3000
+  community.general.ufw:
+    route: true
+    port: '3000'
+    proto: tcp

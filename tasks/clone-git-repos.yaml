@@ -1,5 +1,4 @@
 - name: Setup Git Repos
-  become_user: "{{ user }}"
   block:
     - name: Cloning Dotfiles Repo
       ansible.builtin.git:

@@ -2,10 +2,10 @@
   ansible.builtin.command: fstrim -nv /
   changed_when: false
   register: trim_status
-  when: setup_trim.exists
 
 - name: Setup SSD TRIM
-  when: trim_status.stdout | regex_search('not supported', multiline=True, ignorecase=True)
+  when: "'not supported' in trim_status.stdout"
+  # when: trim_status.stdout | regex_search('not supported', multiline=True, ignorecase=True)
   block:
     - name: Getting root Filesystem Disk
       ansible.builtin.shell: |
@@ -94,4 +94,8 @@
         group: root
         mode: 0644
         backup: true
+
+    - name: Running Initial TRIM
+      ansible.builtin.command: fstrim -v /
+      when: maximum_unmap_lba_count.stdout | int > 0 and unmap_command_support.stdout | int == 1
   notify: Enable TRIM Timer Service
